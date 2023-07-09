@@ -1,4 +1,3 @@
-
 /*
 ?- ta_slot_assignment([ta(y, 4), ta(h, 7), ta(r, 8), ta(s, 8)],RemTAs,y).
 RemTAs = [ta(y, 3), ta(h, 7), ta(r, 8), ta(s, 8)]
@@ -9,9 +8,12 @@ false.
 ta_slot_assignment([ta(Name,L)| T],[ta(Name,L2)|T],Name):-
 	L > 0,
  	L2 is L-1 .
-ta_slot_assignment([ta(Name1,T)|R],[ta(Name1,T)|R2],Name):-
+	
+ta_slot_assignment([ta(N,T)|R],[ta(N,T)|R2],Name):-
 	ta_slot_assignment(R,R2,Name).
+	
 
+	
 
 	
 /*
@@ -43,41 +45,18 @@ false.
 %case if load is zero
 %case if tas and labnum are equal
 */
-poss_assign([],[]).
 
-poss_assign([ta(Name,Load)|T],[Name|T1]):-
-	Load \= 0,
-	poss_assign(T,T1).
 	
-poss_assign([ta(_,L)|T],T1):-
-	L = 0,
-	poss_assign(T,T1).
 	
-actual_assign(0,_,[]).
+slot_assignment(0,A,A,[]).
+slot_assignment(N, TAs, RemTAs, [H|T]) :-
+	N>0,
+	N1 is N - 1,
+	ta_slot_assignment(TAs,[H1|T2],H),
+	slot_assignment(N1,[H1|T2],RemTAs,T),
+	\+ member(H,T).
 
-actual_assign(N,[H|T],[H|T1]):-
-	N1 is N - 1 ,
-	actual_assign(N1,T,T1).
-
-update_TAs(RemTAs,[],RemTAs).
-
-update_TAs(TAs,[H|T],RemTAs1):-
-	ta_slot_assignment(TAs,RemTAs,H),
-	update_TAs(RemTAs,T,RemTAs1).
-
-slot_assignment(N, TAs, RemTAs, Act_assign) :-
-	poss_assign(TAs,Assign),
-	length(Assign,N1),
-	N1 > N,
-	permutation(Assign,Assign_perm),
-	actual_assign(N,Assign_perm,Act_assign),
-	update_TAs(TAs,Act_assign,RemTAs).
 	
-slot_assignment(N, TAs, RemTAs, Assign) :-
-	poss_assign(TAs,Assign),
-	length(Assign,N1),
-	N1 == N,
-	update_TAs(TAs,Assign,RemTAs).
 
 
 	
@@ -145,12 +124,11 @@ RemTAs = [ta(k, 1), ta(m, 0), ta(n, 0)],
 Assignment = [[], [n, m], [], [m], []] ;
 false.
 */ 
-
 day_schedule([],A,A,[]).
 day_schedule([H|T],TAs,RemTAs,[H1|T1]):-
 	slot_assignment(H,TAs,RemTAs1,H1),
 	day_schedule(T,RemTAs1,RemTAs,T1).
-	
+
 	
 week_schedule([],_,_,[]).
 week_schedule([H|T],TAs,DayMax,[Assign|T1]):-
@@ -159,6 +137,8 @@ week_schedule([H|T],TAs,DayMax,[Assign|T1]):-
 	week_schedule(T,RemTAs,DayMax,T1).
 	
 /*	
+set_prolog_flag(answer_write_options,[quoted(true),portray(true),max_depth(0),spacing(next_argument)]).
+
 ?- week_schedule([[1, 1, 2, 1, 0], [0, 0, 0, 0, 0],[0, 0, 0, 0, 0] , [0, 2, 0, 0, 0] , [0, 2, 1, 1, 0] ,[1, 0, 1, 1, 1] ],[ta(k, 8), ta(m, 4), ta(n, 3)],3,[ [[m], [n], [m,n], [k], []],[[], [], [], [], []],[[], [], [], [], []],[[], [k,m], [], [], []],[[], [k,m], [n], [k], []],[[k], [], [k], [k], [k]]]).
 false.
 ?- week_schedule([[1, 1, 2, 1, 0], [0, 0, 0, 0, 0],[0, 0, 0, 0, 0] , [0, 2, 0, 0, 0] , [0, 2, 1, 1, 0] ,[1, 0, 1, 1, 1] ],[ta(k, 8), ta(m, 4), ta(n, 3)],3,WeekSched).
@@ -245,9 +225,9 @@ WeekSched = [[[], [], [], [], []],
 [[], [], [], [], []],
 [[], [m, k], [], [m], []],
 [[], [], [], [], []],
-[[], [], [], [], []]] ;
+[[], [], [], [], []]] ;
 false.
 
 
- set_prolog_flag(answer_write_options,[quoted(true),portray(true),max_depth(0),spacing(next_argument)]).
+ 
 */
